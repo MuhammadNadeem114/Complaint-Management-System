@@ -1,0 +1,26 @@
+[
+  {
+    "id": "85geb",
+    "name": "System Admin",
+    "email": "admin@scms.local",
+    "password": "$2a$10$p7geWxBE40l.DQMAqtbfluaHWaiKJ0I3KN6QMX5Q9NoBl3cKHXnD2",
+    "role": "admin",
+    "createdAt": "2026-04-19T04:44:02.276Z"
+  },
+  {
+    "id": "z4qes",
+    "name": "ali",
+    "email": "muhammadnadeem2848@gmail.com",
+    "password": "$2a$10$d9MVMjB6Xfw8Dn8J6oPTAO9dW5.zfKEG8QbOOxyaFOW.7B4Amaf9.",
+    "role": "user",
+    "createdAt": "2026-04-19T04:45:27.304Z"
+  },
+  {
+    "id": "05vy9c",
+    "name": "nadeem",
+    "email": "khanjahazkhan@gmail.com",
+    "password": "$2a$08$4LpXkYlgfV/SDHHs84jEtuNb2QMzCshRA7h0ne3UMTuaNwY5hck7K",
+    "role": "user",
+    "createdAt": "2026-04-19T16:25:47.629Z"
+  }
+]
