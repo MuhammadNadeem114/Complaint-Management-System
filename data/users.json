@@ -22,5 +22,21 @@
     "password": "$2a$08$4LpXkYlgfV/SDHHs84jEtuNb2QMzCshRA7h0ne3UMTuaNwY5hck7K",
     "role": "user",
     "createdAt": "2026-04-19T16:25:47.629Z"
+  },
+  {
+    "id": "j31wv",
+    "name": "nadeem",
+    "email": "silenciorelatosen@gmail.com",
+    "password": "$2a$08$Ay1796lbaWHRW52t2Iai3ev52LQbzf4YHEDNDc3DPhSyS.e6unUvK",
+    "role": "user",
+    "createdAt": "2026-04-27T08:08:51.051Z"
+  },
+  {
+    "id": "qvglcb",
+    "name": "Ali",
+    "email": "pubgsherry48@gmail.com",
+    "password": "$2a$08$RWgOW4FQh/hCD15a1PMUB.aimxYt0UB8VvDEG8A4LMwYeRHW1lhS6",
+    "role": "user",
+    "createdAt": "2026-04-27T12:57:49.024Z"
   }
 ]

@@ -5,18 +5,29 @@ const nodemailer = require('nodemailer');
 // Setup: https://myaccount.google.com/apppasswords
 let transporter;
 
+const normalizePassword = (password = '') => password.replace(/\s+/g, '').trim();
+
 async function initializeTransporter() {
-  // If SMTP_PASSWORD is set and looks like an app password, use Gmail
-  if (process.env.SMTP_PASSWORD && process.env.SMTP_PASSWORD !== 'your_app_password_here') {
+  console.log('Initializing email transporter...');
+  
+  const smtpEmail = process.env.SMTP_EMAIL || 'muhammadnadeem2848@gmail.com';
+  const smtpPass = normalizePassword(process.env.SMTP_PASSWORD);
+
+  if (smtpPass && smtpPass.length >= 16) {
+    console.log(`Configuring Gmail SMTP for: ${smtpEmail}`);
     transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.SMTP_EMAIL || 'muhammadnadeem2848@gmail.com',
-        pass: process.env.SMTP_PASSWORD,
+        user: smtpEmail,
+        pass: smtpPass,
+      },
+      secure: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
   } else {
-    // Use Ethereal test account for development
+    console.warn('No valid SMTP_PASSWORD found (must be 16+ chars). Falling back to Ethereal test account for development.');
     const testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -27,37 +38,47 @@ async function initializeTransporter() {
         pass: testAccount.pass,
       },
     });
-    console.log('Using Ethereal Email Test Account (Development Mode)');
-    console.log('View test email preview URLs in console');
+    console.log('✓ Using Ethereal Email Test Account (Development Mode)');
+    console.log('  User:', testAccount.user);
   }
+  
+  try {
+    await transporter.verify();
+    console.log('✓ Email transporter is ready to send messages');
+  } catch (error) {
+    console.error('❌ Email transporter verification failed:', error.message);
+    if (error.code === 'EAUTH') {
+      console.error('  Authentication Error: Please check if your Gmail App Password is correct.');
+      console.error('  Make sure 2FA is enabled and App Password is 16 characters.');
+    }
+  }
+  
   return transporter;
 }
-
-// Remove the top-level call
-// initializeTransporter().then((t) => {
-//   t.verify((error, success) => {
-//     if (error) {
-//       console.error('Email transporter verification failed:', error.message);
-//     } else {
-//       console.log('✓ Email transporter is ready to send messages');
-//     }
-//   });
-// });
 
 const sendComplaintEmail = async (complaint, userName, userEmail) => {
   try {
     if (!transporter) {
       await initializeTransporter();
-      transporter.verify((error, success) => {
-        if (error) {
-          console.error('Email transporter verification failed:', error.message);
-        } else {
-          console.log('✓ Email transporter is ready to send messages');
-        }
-      });
     }
+    
+    const smtpEmail = process.env.SMTP_EMAIL || 'muhammadnadeem2848@gmail.com';
     const adminEmail = process.env.NOTIFICATION_EMAIL || process.env.SMTP_EMAIL || process.env.ADMIN_EMAIL || 'muhammadnadeem2848@gmail.com';
+    
+    console.log(`Attempting to send complaint email from ${smtpEmail} to ${adminEmail}...`);
+    
     const subject = `New Complaint: ${complaint.title}`;
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const apiUrl = (process.env.API_URL || 'http://localhost:5000').trim();
+    const actionToken = process.env.EMAIL_ACTION_SECRET || 'replace-with-secret';
+
+    if (apiUrl.includes('localhost') && process.env.NODE_ENV !== 'test') {
+      console.warn('⚠️ API_URL is set to localhost. Email links will only work on the same machine. For mobile access, set API_URL to your device-accessible IP or public URL.');
+    }
+
+    const resolveUrl = `${clientUrl}/admin/dashboard?complaintId=${complaint._id}`;
+    const directResolveUrl = `${apiUrl}/api/complaints/resolve/${complaint._id}?token=${actionToken}`;
+
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5; border-radius: 10px;">
         <div style="background: white; padding: 20px; border-radius: 8px;">
@@ -83,29 +104,36 @@ const sendComplaintEmail = async (complaint, userName, userEmail) => {
             </p>
           </div>
           
+          <div style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+            <a href="${directResolveUrl}" style="text-decoration: none; display:inline-block; padding: 12px 22px; border-radius: 999px; background: #3b82f6; color: white; font-weight: 600;">Resolve complaint</a>
+            <a href="${resolveUrl}" style="text-decoration: none; display:inline-block; padding: 12px 22px; border-radius: 999px; background: #94a3b8; color: white; font-weight: 600;">View in dashboard</a>
+          </div>
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;">
-            <p>Smart Complaint Management System - Automated Email</p>
+            <p>Smart Complaint Management System - Automated Email Notification</p>
           </div>
         </div>
       </div>
     `;
 
     const info = await transporter.sendMail({
-      from: process.env.SMTP_EMAIL || 'muhammadnadeem2848@gmail.com',
+      from: `"Smart Complaint System" <${smtpEmail}>`,
       to: adminEmail,
       subject: subject,
       html: htmlContent,
     });
 
-    console.log(`✓ Email sent for complaint: ${complaint._id}`);
+    console.log(`✓ Email sent successfully to ${adminEmail}. MessageId: ${info.messageId}`);
     if (transporter.options.host === 'smtp.ethereal.email') {
       console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
     }
     return true;
   } catch (error) {
-    console.error('Email sending failed:', error.message);
+    console.error('❌ Email sending failed:', error.message);
+    if (error.code === 'EAUTH') {
+      console.error('  Authentication Error: Please check if your Gmail App Password is correct.');
+    }
     return false;
   }
 };
 
-module.exports = { sendComplaintEmail };
+module.exports = { sendComplaintEmail, initializeTransporter };

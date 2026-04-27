@@ -7,6 +7,11 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
     "start:backend": "npm --prefix backend run start:prod",
-    "build:frontend": "npm --prefix frontend run build"
+    "build:frontend": "npm --prefix frontend run build",
+    "tunnel:backend": "npx ngrok http 5000 --log=stdout",
+    "tunnel:frontend": "npx ngrok http 5173 --log=stdout"
+  },
+  "devDependencies": {
+    "ngrok": "^4.0.0"
   }
 }

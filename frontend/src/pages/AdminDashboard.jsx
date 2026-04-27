@@ -104,30 +104,30 @@ const AdminDashboard = () => {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.8fr_1fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Complaint status summary</h2>
+          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]/95 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+            <h2 className="text-xl font-semibold text-[var(--text)]">Complaint status summary</h2>
             <div className="mt-6 h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.35)" />
+                  <XAxis dataKey="name" stroke="rgba(226,232,240,0.9)" />
+                  <YAxis stroke="rgba(226,232,240,0.9)" />
+                  <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.96)', borderRadius: 16, border: '1px solid rgba(148,163,184,0.18)' }} labelStyle={{ color: '#e2e8f0' }} itemStyle={{ color: '#cbd5e1' }} />
+                  <Bar dataKey="value" fill="#22d3ee" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Filters</h2>
+          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]/95 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+            <h2 className="text-xl font-semibold text-[var(--text)]">Filters</h2>
             <div className="mt-5 space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Status</label>
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Status</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                 >
                   {['All', ...statusOptions].map((option) => (
                     <option key={option} value={option}>{option}</option>
@@ -135,11 +135,11 @@ const AdminDashboard = () => {
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Category</label>
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                 >
                   {categoryOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>

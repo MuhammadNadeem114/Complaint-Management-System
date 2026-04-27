@@ -13,15 +13,18 @@ Since Gmail requires enhanced security, you need to create an **App Password** (
 3. Google will generate a 16-character password
 4. Copy this password (spaces are automatically removed)
 
-### Step 2: Update .env File
-Edit `backend/.env` and update:
+### Step 2: Update `.env` File
+Create or edit `backend/.env` and update:
 
 ```
 SMTP_EMAIL=muhammadnadeem2848@gmail.com
 SMTP_PASSWORD=xxxx xxxx xxxx xxxx
+NOTIFICATION_EMAIL=muhammadnadeem2848@gmail.com
+JWT_SECRET=your_jwt_secret_here
+PORT=5000
 ```
 
-Replace `xxxx xxxx xxxx xxxx` with the 16-character password from Step 1 (without spaces).
+Replace `xxxx xxxx xxxx xxxx` with the 16-character App Password from Step 1. The backend strips spaces automatically, so the value can include spaces if copied directly from Gmail.
 
 ### Step 3: Test Email Feature
 

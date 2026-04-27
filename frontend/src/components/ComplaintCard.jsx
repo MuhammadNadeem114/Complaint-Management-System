@@ -1,25 +1,25 @@
 const ComplaintCard = ({ complaint, onDelete, onUpdate, isAdmin }) => {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="transform rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]/95 p-6 shadow-2xl shadow-slate-950/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-slate-950/70">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">{complaint.title}</h3>
-          <p className="text-sm text-slate-500">{complaint.category} • {complaint.priority}</p>
+          <h3 className="text-xl font-semibold text-[var(--text)]">{complaint.title}</h3>
+          <p className="text-sm text-[var(--muted)]">{complaint.category} • {complaint.priority}</p>
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-600">
+        <span className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em] font-semibold ${complaint.status === 'Resolved' ? 'bg-emerald-500/15 text-emerald-200' : complaint.status === 'In Progress' ? 'bg-cyan-500/15 text-cyan-200' : 'bg-amber-500/15 text-amber-200'}`}>
           {complaint.status}
         </span>
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-700">{complaint.description}</p>
+      <p className="mt-5 text-sm leading-7 text-[var(--muted)]">{complaint.description}</p>
       <div className="mt-5 flex flex-wrap gap-2">
-        <p className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Submitted by {complaint.userId?.name || 'you'}</p>
-        <p className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{new Date(complaint.createdAt).toLocaleString()}</p>
+        <p className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-medium text-[var(--text)]">Submitted by {complaint.userId?.name || 'you'}</p>
+        <p className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-medium text-[var(--text)]">{new Date(complaint.createdAt).toLocaleString()}</p>
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
         {isAdmin && (
           <button
             onClick={() => onUpdate(complaint)}
-            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+            className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
           >
             Update status
           </button>

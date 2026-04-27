@@ -52,36 +52,36 @@ const UserDashboard = () => {
   return (
     <DashboardLayout title={`Welcome back, ${user?.name}`} subtitle="Submit new complaints and monitor existing requests.">
       <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Submit a complaint</h2>
+          <div className="lg:col-span-2 rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]/95 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+            <h2 className="text-xl font-semibold text-[var(--text)]">Submit a complaint</h2>
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Title</label>
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Title</label>
                 <input
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                   placeholder="Issue title"
                   required
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Description</label>
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 min-h-[140px] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] min-h-[140px] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                   placeholder="Describe the problem in detail"
                   required
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">Category</label>
+                  <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Category</label>
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                   >
                     <option>Electricity</option>
                     <option>Water</option>
@@ -90,11 +90,11 @@ const UserDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">Priority</label>
+                  <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Priority</label>
                   <select
                     value={form.priority}
                     onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] px-4 py-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent-soft)] focus:outline-none transition"
                   >
                     <option>Low</option>
                     <option>Medium</option>
@@ -105,7 +105,7 @@ const UserDashboard = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-white font-semibold shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-800 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none transition"
+                className="rounded-2xl bg-[var(--accent)] px-6 py-3 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-500 disabled:text-slate-200 transition"
               >
                 {loading ? 'Submitting...' : 'Submit complaint'}
               </button>
