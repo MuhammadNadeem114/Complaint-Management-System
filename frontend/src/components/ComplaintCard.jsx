@@ -15,6 +15,21 @@ const ComplaintCard = ({ complaint, onDelete, onUpdate, isAdmin }) => {
         <p className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-medium text-[var(--text)]">Submitted by {complaint.userId?.name || 'you'}</p>
         <p className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-medium text-[var(--text)]">{new Date(complaint.createdAt).toLocaleString()}</p>
       </div>
+      {complaint.history?.length > 0 && (
+        <div className="mt-6 rounded-3xl border border-[var(--border)] bg-[var(--surface-soft)] p-4">
+          <h4 className="text-sm font-semibold text-[var(--text)]">History</h4>
+          <div className="mt-4 space-y-3">
+            {complaint.history.slice(-3).reverse().map((event, index) => (
+              <div key={index} className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{new Date(event.timestamp).toLocaleString()}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text)]">{event.action}</p>
+                {event.comment && <p className="mt-1 text-sm text-[var(--muted)]">{event.comment}</p>}
+                <p className="mt-2 text-xs text-[var(--muted)]">By: {event.changedBy?.name || 'System'} ({event.changedBy?.role || 'system'})</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="mt-5 flex flex-wrap gap-3">
         {isAdmin && (
           <button

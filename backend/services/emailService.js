@@ -104,7 +104,11 @@ const sendComplaintEmail = async (complaint, userName, userEmail) => {
             </p>
           </div>
           
-          <div style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+          <div style="margin-top: 20px; color: #334155; font-size: 14px; line-height: 1.6;">
+            <p>This email includes a mobile-friendly action button so you can resolve the complaint directly from your phone or any remote browser.</p>
+          </div>
+
+          <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
             <a href="${directResolveUrl}" style="text-decoration: none; display:inline-block; padding: 12px 22px; border-radius: 999px; background: #3b82f6; color: white; font-weight: 600;">Resolve complaint</a>
             <a href="${resolveUrl}" style="text-decoration: none; display:inline-block; padding: 12px 22px; border-radius: 999px; background: #94a3b8; color: white; font-weight: 600;">View in dashboard</a>
           </div>

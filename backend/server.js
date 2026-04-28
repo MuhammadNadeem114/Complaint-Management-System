@@ -6,10 +6,11 @@ const authRoutes = require('./routes/auth');
 const complaintRoutes = require('./routes/complaints');
 const { initializeTransporter } = require('./services/emailService');
 const seedAdmin = require('./seed/adminSeed');
+const { connectDatabase, Complaint } = require('./db');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -23,15 +24,22 @@ app.get('/api/complaints/resolve/:id', async (req, res) => {
     if (!token || token !== process.env.EMAIL_ACTION_SECRET) {
       return res.status(401).send('<h1>Unauthorized</h1><p>Invalid or missing email action token.</p>');
     }
-    const { readComplaints, writeComplaints } = require('./db');
-    const complaints = readComplaints();
-    const complaint = complaints.find((c) => c._id === id);
+
+    const complaint = await Complaint.findById(id);
     if (!complaint) {
       return res.status(404).send('<h1>Not Found</h1><p>Complaint not found.</p>');
     }
-    complaint.status = 'Resolved';
-    complaint.updatedAt = new Date();
-    writeComplaints(complaints);
+
+    if (complaint.status !== 'Resolved') {
+      complaint.status = 'Resolved';
+      complaint.history.push({
+        action: 'Resolved via email link',
+        comment: 'Complaint resolved through mobile-friendly email action',
+        changedBy: { name: 'Email action', role: 'system' },
+      });
+      await complaint.save();
+    }
+
     return res.send(`<h1>Complaint Resolved</h1><p>Complaint <strong>${complaint.title}</strong> has been marked as resolved.</p>`);
   } catch (error) {
     console.error(error);
@@ -41,7 +49,6 @@ app.get('/api/complaints/resolve/:id', async (req, res) => {
 
 app.use('/api/complaints', complaintRoutes);
 
-// Test email endpoint
 app.post('/api/test-email', async (req, res) => {
   try {
     const { sendComplaintEmail } = require('./services/emailService');
@@ -49,7 +56,7 @@ app.post('/api/test-email', async (req, res) => {
       _id: 'test-123',
       title: 'Test Email Notification',
       description: 'This is a test email to verify the email service is working.',
-      category: 'Technical',
+      category: 'Other',
       priority: 'Medium',
       status: 'Pending',
       createdAt: new Date(),
@@ -70,8 +77,16 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Server error' });
 });
 
-app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
+const startServer = async () => {
+  await connectDatabase();
   await seedAdmin();
   await initializeTransporter();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer().catch((error) => {
+  console.error('Server startup error:', error);
+  process.exit(1);
 });

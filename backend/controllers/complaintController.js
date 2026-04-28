@@ -1,5 +1,27 @@
-const { readComplaints, writeComplaints, readUsers, generateId } = require('../db');
+const { Complaint, User } = require('../db');
 const { sendComplaintEmail } = require('../services/emailService');
+
+const buildUserPayload = (user) => ({
+  id: user._id.toString(),
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
+const buildComplaintResponse = (complaint) => {
+  const result = complaint.toObject ? complaint.toObject() : { ...complaint };
+  if (result.userId && result.userId._id) {
+    result.userId = buildUserPayload(result.userId);
+  } else if (result.userId) {
+    result.userId = {
+      id: result.userId.toString(),
+      name: result.userId.name,
+      email: result.userId.email,
+      role: result.userId.role,
+    };
+  }
+  return result;
+};
 
 exports.createComplaint = async (req, res, next) => {
   try {
@@ -8,33 +30,37 @@ exports.createComplaint = async (req, res, next) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    const complaints = readComplaints();
-    const users = readUsers();
-    const currentUser = users.find((u) => u.id === req.user.id);
+    const currentUser = await User.findById(req.user.id);
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Authenticated user not found' });
+    }
 
-    const complaint = {
-      _id: generateId(),
+    const complaint = new Complaint({
       title,
       description,
       category,
       priority,
       status: 'Pending',
-      userId: req.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+      userId: currentUser._id,
+      history: [
+        {
+          action: 'Created',
+          comment: 'Complaint submitted by user',
+          changedBy: {
+            id: currentUser._id,
+            name: currentUser.name,
+            role: currentUser.role,
+          },
+        },
+      ],
+    });
 
-    complaints.push(complaint);
-    writeComplaints(complaints);
+    await complaint.save();
 
-    // Send email notification and include delivery status in logs
-    let emailSent = false;
-    if (currentUser) {
-      emailSent = await sendComplaintEmail(complaint, currentUser.name, currentUser.email);
-    }
+    const emailSent = await sendComplaintEmail(complaint, currentUser.name, currentUser.email);
 
     res.status(201).json({
-      complaint,
+      complaint: buildComplaintResponse(await complaint.populate('userId')),
       emailSent,
       message: emailSent
         ? 'Complaint submitted and email sent successfully.'
@@ -47,16 +73,8 @@ exports.createComplaint = async (req, res, next) => {
 
 exports.getAllComplaints = async (req, res, next) => {
   try {
-    const complaints = readComplaints();
-    const users = readUsers();
-    const enriched = complaints.map((c) => {
-      const user = users.find((u) => u.id === c.userId);
-      return {
-        ...c,
-        userId: user ? { name: user.name, email: user.email, role: user.role, _id: user.id } : null,
-      };
-    });
-    res.json(enriched);
+    const complaints = await Complaint.find().sort({ createdAt: -1 }).populate('userId', 'name email role');
+    res.json(complaints.map(buildComplaintResponse));
   } catch (error) {
     next(error);
   }
@@ -64,11 +82,8 @@ exports.getAllComplaints = async (req, res, next) => {
 
 exports.getUserComplaints = async (req, res, next) => {
   try {
-    const complaints = readComplaints();
-    const userComplaints = complaints
-      .filter((c) => c.userId === req.user.id)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json(userComplaints);
+    const userComplaints = await Complaint.find({ userId: req.user.id }).sort({ createdAt: -1 }).populate('userId', 'name email role');
+    res.json(userComplaints.map(buildComplaintResponse));
   } catch (error) {
     next(error);
   }
@@ -78,25 +93,40 @@ exports.updateComplaint = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, priority } = req.body;
-    const complaints = readComplaints();
-    const complaint = complaints.find((c) => c._id === id);
+    const complaint = await Complaint.findById(id);
 
     if (!complaint) {
       return res.status(404).json({ error: 'Complaint not found' });
     }
 
-    if (status) complaint.status = status;
-    if (priority) complaint.priority = priority;
-    complaint.updatedAt = new Date();
+    const changedBy = {
+      id: req.user.id,
+      name: req.user.role === 'admin' ? 'Admin user' : 'User',
+      role: req.user.role,
+    };
 
-    writeComplaints(complaints);
+    if (status && status !== complaint.status) {
+      complaint.history.push({
+        action: 'Status updated',
+        comment: `Status changed from ${complaint.status} to ${status}`,
+        changedBy,
+      });
+      complaint.status = status;
+    }
 
-    const users = readUsers();
-    const user = users.find((u) => u.id === complaint.userId);
-    res.json({
-      ...complaint,
-      userId: user ? { name: user.name, email: user.email, role: user.role, _id: user.id } : null,
-    });
+    if (priority && priority !== complaint.priority) {
+      complaint.history.push({
+        action: 'Priority updated',
+        comment: `Priority changed from ${complaint.priority} to ${priority}`,
+        changedBy,
+      });
+      complaint.priority = priority;
+    }
+
+    await complaint.save();
+    await complaint.populate('userId', 'name email role');
+
+    res.json(buildComplaintResponse(complaint));
   } catch (error) {
     next(error);
   }
@@ -104,14 +134,13 @@ exports.updateComplaint = async (req, res, next) => {
 
 exports.deleteComplaint = async (req, res, next) => {
   try {
-    const complaints = readComplaints();
-    const complaint = complaints.find((c) => c._id === req.params.id);
+    const complaint = await Complaint.findById(req.params.id);
 
     if (!complaint) {
       return res.status(404).json({ error: 'Complaint not found' });
     }
 
-    if (complaint.userId !== req.user.id) {
+    if (!complaint.userId.equals(req.user.id)) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -119,8 +148,7 @@ exports.deleteComplaint = async (req, res, next) => {
       return res.status(400).json({ error: 'Only pending complaints can be deleted' });
     }
 
-    const filtered = complaints.filter((c) => c._id !== req.params.id);
-    writeComplaints(filtered);
+    await complaint.deleteOne();
     res.json({ message: 'Complaint deleted' });
   } catch (error) {
     next(error);
@@ -129,13 +157,14 @@ exports.deleteComplaint = async (req, res, next) => {
 
 exports.getComplaintStats = async (req, res, next) => {
   try {
-    const complaints = readComplaints();
-    const match = req.user.role === 'admin' ? complaints : complaints.filter((c) => c.userId === req.user.id);
+    const complaints = req.user.role === 'admin'
+      ? await Complaint.find()
+      : await Complaint.find({ userId: req.user.id });
 
-    const total = match.length;
-    const pending = match.filter((c) => c.status === 'Pending').length;
-    const inProgress = match.filter((c) => c.status === 'In Progress').length;
-    const resolved = match.filter((c) => c.status === 'Resolved').length;
+    const total = complaints.length;
+    const pending = complaints.filter((c) => c.status === 'Pending').length;
+    const inProgress = complaints.filter((c) => c.status === 'In Progress').length;
+    const resolved = complaints.filter((c) => c.status === 'Resolved').length;
 
     res.json({ total, pending, inProgress, resolved });
   } catch (error) {

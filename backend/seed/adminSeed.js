@@ -1,26 +1,22 @@
 const bcrypt = require('bcryptjs');
-const { readUsers, writeUsers, generateId } = require('../db');
+const { User } = require('../db');
 
 const seedAdmin = async () => {
   try {
-    const users = readUsers();
-    const existingAdmin = users.find((u) => u.role === 'admin');
+    const existingAdmin = await User.findOne({ role: 'admin' });
     if (existingAdmin) {
       return;
     }
 
     const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@123', 10);
-    const adminUser = {
-      id: generateId(),
+    const adminUser = new User({
       name: process.env.ADMIN_NAME || 'System Admin',
       email: process.env.ADMIN_EMAIL || 'admin@scms.local',
       password: hashedPassword,
       role: 'admin',
-      createdAt: new Date(),
-    };
+    });
 
-    users.push(adminUser);
-    writeUsers(users);
+    await adminUser.save();
     console.log('✓ Admin user created:', adminUser.email);
   } catch (error) {
     console.error('Admin seed error:', error.message);

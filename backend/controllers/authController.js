@@ -1,12 +1,19 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { readUsers, writeUsers, generateId } = require('../db');
+const { User } = require('../db');
 
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user._id.toString(), role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 };
+
+const buildUserPayload = (user) => ({
+  id: user._id.toString(),
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
 
 exports.register = async (req, res, next) => {
   try {
@@ -15,28 +22,24 @@ exports.register = async (req, res, next) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    const users = readUsers();
-    const existing = users.find((u) => u.email === email);
-    if (existing) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({ error: 'Email already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 8);
-    const user = {
-      id: generateId(),
+    const user = new User({
       name,
       email,
       password: hashedPassword,
       role: 'user',
-      createdAt: new Date(),
-    };
+    });
 
-    users.push(user);
-    writeUsers(users);
+    await user.save();
 
     const token = generateToken(user);
     res.status(201).json({
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: buildUserPayload(user),
       token,
     });
   } catch (error) {
@@ -51,8 +54,7 @@ exports.login = async (req, res, next) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const users = readUsers();
-    const user = users.find((u) => u.email === email);
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -64,7 +66,7 @@ exports.login = async (req, res, next) => {
 
     const token = generateToken(user);
     res.json({
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: buildUserPayload(user),
       token,
     });
   } catch (error) {
