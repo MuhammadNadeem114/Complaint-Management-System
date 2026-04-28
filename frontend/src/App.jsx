@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ComplaintsPage from './pages/ComplaintsPage';
+import ComplaintDetail from './pages/ComplaintDetail';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
@@ -29,6 +30,7 @@ function AppContent() {
         <Route element={<ProtectedRoute />}>
           <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/complaints" element={<ComplaintsPage />} />
+          <Route path="/complaint/:id" element={<ComplaintDetail />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 

@@ -89,6 +89,23 @@ exports.getUserComplaints = async (req, res, next) => {
   }
 };
 
+exports.getComplaintById = async (req, res, next) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id).populate('userId', 'name email role');
+    if (!complaint) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    if (req.user.role !== 'admin' && complaint.userId._id.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    res.json(buildComplaintResponse(complaint));
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.updateComplaint = async (req, res, next) => {
   try {
     const { id } = req.params;

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const ComplaintCard = ({ complaint, onDelete, onUpdate, isAdmin }) => {
   return (
     <div className="transform rounded-[2rem] border border-[var(--border)] bg-[var(--surface)]/95 p-6 shadow-2xl shadow-slate-950/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-slate-950/70">
@@ -31,6 +33,12 @@ const ComplaintCard = ({ complaint, onDelete, onUpdate, isAdmin }) => {
         </div>
       )}
       <div className="mt-5 flex flex-wrap gap-3">
+        <Link
+          to={`/complaint/${complaint._id}`}
+          className="rounded-full border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface)] transition"
+        >
+          View details
+        </Link>
         {isAdmin && (
           <button
             onClick={() => onUpdate(complaint)}

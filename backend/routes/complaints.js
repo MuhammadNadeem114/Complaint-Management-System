@@ -15,8 +15,9 @@ router.use(protect);
 
 router.post('/', createComplaint);
 router.get('/user', getUserComplaints);
-router.delete('/:id', deleteComplaint);
 router.get('/stats', getComplaintStats);
+router.get('/:id', getComplaintById);
+router.delete('/:id', deleteComplaint);
 router.get('/', authorize(['admin']), getAllComplaints);
 router.put('/:id', authorize(['admin']), updateComplaint);
 
