@@ -3,6 +3,7 @@ const {
   createComplaint,
   getAllComplaints,
   getUserComplaints,
+  getComplaintById,
   updateComplaint,
   deleteComplaint,
   getComplaintStats,
